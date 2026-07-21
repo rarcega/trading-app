@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QThread
 from PyQt6.QtGui import QAction, QColor, QFont
-from config import config
+from config import config, save_config
 from database.db_manager import DatabaseManager
 from broker.simulation_connector import SimulationConnector
 from broker.order_manager import OrderManager
@@ -300,22 +300,27 @@ class MainWindow(QMainWindow):
             self.broker.cash = value
             self.broker.account_value = value
         self.update_account_summary()
+        save_config(config)
 
     def on_buy_threshold_changed(self, value):
         config.strategy.buy_threshold = value
         self.log(f"Umbral compra: {value}")
+        save_config(config)
 
     def on_sell_threshold_changed(self, value):
         config.strategy.sell_threshold = value
         self.log(f"Umbral venta: {value}")
+        save_config(config)
 
     def on_rsi_oversold_changed(self, value):
         config.strategy.rsi_oversold = value
         self.log(f"RSI sobreventa: {value}")
+        save_config(config)
 
     def on_rsi_overbought_changed(self, value):
         config.strategy.rsi_overbought = value
         self.log(f"RSI sobrecompra: {value}")
+        save_config(config)
 
     def add_to_watchlist(self):
         symbol = self.watchlist_input.text().strip().upper()
@@ -335,6 +340,7 @@ class MainWindow(QMainWindow):
                 QMessageBox.information(self, "Info", f"{symbol} ya está en la watchlist")
         self.watchlist_input.clear()
         self.update_watchlist_table()
+        save_config(config)
 
     def remove_from_watchlist(self):
         row = self.watchlist_table.currentRow()
@@ -346,6 +352,7 @@ class MainWindow(QMainWindow):
             config.trading.watchlist.remove(symbol)
             self.log(f"Eliminado de watchlist: {symbol}")
             self.update_watchlist_table()
+            save_config(config)
 
     def update_watchlist_table(self):
         self.watchlist_table.setRowCount(len(config.trading.watchlist))
