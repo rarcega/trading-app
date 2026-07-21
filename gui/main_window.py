@@ -59,6 +59,7 @@ class MainWindow(QMainWindow):
         self.update_watchlist_table()
         self.update_portfolio_table()
         self.update_trades_table()
+        self.update_signals_table()
 
     def setup_ui(self):
         central = QWidget()
@@ -392,6 +393,7 @@ class MainWindow(QMainWindow):
     def on_action(self, action: dict):
         self.update_portfolio_table()
         self.update_trades_table()
+        self.update_signals_table()
         self.update_account_summary()
         self.log(f"Operación: {action['action']} {action['symbol']} x{action['quantity']}")
 
@@ -437,6 +439,22 @@ class MainWindow(QMainWindow):
             self.trades_table.setItem(i, 4, QTableWidgetItem(f"${trade.price:.2f}"))
             self.trades_table.setItem(i, 5, QTableWidgetItem(f"${trade.total_amount:.2f}"))
             self.trades_table.setItem(i, 6, QTableWidgetItem(trade.notes or ""))
+
+    def update_signals_table(self):
+        signals = self.db.get_signals(limit=50)
+        self.signals_table.setRowCount(len(signals))
+        for i, sig in enumerate(signals):
+            self.signals_table.setItem(i, 0, QTableWidgetItem(str(sig.created_at)[:19]))
+            self.signals_table.setItem(i, 1, QTableWidgetItem(sig.symbol))
+            signal_item = QTableWidgetItem(sig.signal_type)
+            if sig.signal_type == "BUY":
+                signal_item.setForeground(QColor("green"))
+            else:
+                signal_item.setForeground(QColor("red"))
+            self.signals_table.setItem(i, 2, signal_item)
+            self.signals_table.setItem(i, 3, QTableWidgetItem(f"{sig.rsi_value:.1f}" if sig.rsi_value else ""))
+            self.signals_table.setItem(i, 4, QTableWidgetItem(f"{sig.macd_value:.2f}" if sig.macd_value else ""))
+            self.signals_table.setItem(i, 5, QTableWidgetItem(f"${sig.price:.2f}" if sig.price else ""))
 
     def update_account_summary(self):
         summary = self.broker.get_account_summary()
