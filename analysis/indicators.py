@@ -27,17 +27,32 @@ class TechnicalIndicators:
             slow=self.cfg.macd_slow,
             signal=self.cfg.macd_signal,
         )
-        df["MACD"] = macd[f"MACD_{self.cfg.macd_fast}_{self.cfg.macd_slow}_{self.cfg.macd_signal}"]
-        df["MACD_SIGNAL"] = macd[f"MACDs_{self.cfg.macd_fast}_{self.cfg.macd_slow}_{self.cfg.macd_signal}"]
-        df["MACD_HIST"] = macd[f"MACDh_{self.cfg.macd_fast}_{self.cfg.macd_slow}_{self.cfg.macd_signal}"]
+        macd_cols = macd.columns.tolist()
+        macd_main = [c for c in macd_cols if c.startswith("MACD_") and "signal" not in c.lower() and "hist" not in c.lower()]
+        macd_sig = [c for c in macd_cols if c.startswith("MACDs_")]
+        macd_hist = [c for c in macd_cols if c.startswith("MACDh_")]
+        if macd_main:
+            df["MACD"] = macd[macd_main[0]]
+        if macd_sig:
+            df["MACD_SIGNAL"] = macd[macd_sig[0]]
+        if macd_hist:
+            df["MACD_HIST"] = macd[macd_hist[0]]
         return df
 
     def add_bollinger_bands(self, df: pd.DataFrame) -> pd.DataFrame:
         bb = ta.bbands(df["close"], length=self.cfg.bb_period, std=self.cfg.bb_std)
-        df["BB_UPPER"] = bb[f"BBU_{self.cfg.bb_period}_{self.cfg.bb_std}"]
-        df["BB_MID"] = bb[f"BBM_{self.cfg.bb_period}_{self.cfg.bb_std}"]
-        df["BB_LOWER"] = bb[f"BBL_{self.cfg.bb_period}_{self.cfg.bb_std}"]
-        df["BB_WIDTH"] = (df["BB_UPPER"] - df["BB_LOWER"]) / df["BB_MID"]
+        bb_cols = bb.columns.tolist()
+        bb_upper = [c for c in bb_cols if c.startswith("BBU_")]
+        bb_mid = [c for c in bb_cols if c.startswith("BBM_")]
+        bb_lower = [c for c in bb_cols if c.startswith("BBL_")]
+        if bb_upper:
+            df["BB_UPPER"] = bb[bb_upper[0]]
+        if bb_mid:
+            df["BB_MID"] = bb[bb_mid[0]]
+        if bb_lower:
+            df["BB_LOWER"] = bb[bb_lower[0]]
+        if "BB_UPPER" in df.columns and "BB_LOWER" in df.columns and "BB_MID" in df.columns:
+            df["BB_WIDTH"] = (df["BB_UPPER"] - df["BB_LOWER"]) / df["BB_MID"]
         return df
 
     def add_sma(self, df: pd.DataFrame) -> pd.DataFrame:
