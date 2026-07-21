@@ -27,18 +27,16 @@ class StrategyThread(QThread):
     def run(self):
         while self.strategy.is_running():
             try:
-                actions = self.strategy.execute()
+                self.log_signal.emit("--- Escaneando mercado... ---")
+                actions = self.strategy.execute_with_logs(self.log_signal)
                 for action in actions:
                     self.action_signal.emit(action)
-                    self.log_signal.emit(
-                        f"[{action['action']}] {action['symbol']} "
-                        f"x{action['quantity']} @ ${action['price']:.2f} "
-                        f"- {', '.join(action['reasons'])}"
-                    )
             except Exception as e:
                 self.log_signal.emit(f"Error: {e}")
-            self.strategy.broker.update_positions_prices() if hasattr(self.strategy.broker, 'update_positions_prices') else None
-            self.msleep(config.trading.check_interval_seconds * 1000)
+            if self.strategy.is_running():
+                self.log_signal.emit(f"Esperando {config.trading.check_interval_seconds}s para próximo escaneo...")
+                self.strategy.broker.update_positions_prices() if hasattr(self.strategy.broker, 'update_positions_prices') else None
+                self.msleep(config.trading.check_interval_seconds * 1000)
 
 
 class MainWindow(QMainWindow):
