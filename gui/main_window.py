@@ -2,7 +2,8 @@ from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QSplitter,
     QTabWidget, QGroupBox, QLabel, QPushButton, QComboBox,
     QDoubleSpinBox, QSpinBox, QTableWidget, QTableWidgetItem,
-    QHeaderView, QMessageBox, QStatusBar, QToolBar, QTextEdit
+    QHeaderView, QMessageBox, QStatusBar, QToolBar, QTextEdit,
+    QLineEdit
 )
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QThread
 from PyQt6.QtGui import QAction, QColor, QFont
@@ -57,6 +58,7 @@ class MainWindow(QMainWindow):
 
         self.setup_ui()
         self.setup_connections()
+        self.update_watchlist_table()
         self.update_portfolio_table()
         self.update_trades_table()
 
@@ -131,6 +133,34 @@ class MainWindow(QMainWindow):
 
         config_group.setLayout(config_layout)
         left_layout.addWidget(config_group)
+
+        watchlist_group = QGroupBox("Watchlist")
+        watchlist_layout = QVBoxLayout()
+
+        self.watchlist_table = QTableWidget()
+        self.watchlist_table.setColumnCount(1)
+        self.watchlist_table.setHorizontalHeaderLabels(["Símbolo"])
+        self.watchlist_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.watchlist_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        self.watchlist_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
+        self.watchlist_table.setMaximumHeight(200)
+        watchlist_layout.addWidget(self.watchlist_table)
+
+        add_layout = QHBoxLayout()
+        self.watchlist_input = QLineEdit()
+        self.watchlist_input.setPlaceholderText("Ej: AAPL, SAN.MC, SAP.DE")
+        add_layout.addWidget(self.watchlist_input)
+        self.add_watchlist_btn = QPushButton("+")
+        self.add_watchlist_btn.setFixedWidth(40)
+        self.add_watchlist_btn.setStyleSheet("font-weight: bold; font-size: 16px;")
+        add_layout.addWidget(self.add_watchlist_btn)
+        watchlist_layout.addLayout(add_layout)
+
+        self.remove_watchlist_btn = QPushButton("Quitar seleccionada")
+        watchlist_layout.addWidget(self.remove_watchlist_btn)
+
+        watchlist_group.setLayout(watchlist_layout)
+        left_layout.addWidget(watchlist_group)
 
         portfolio_group = QGroupBox("Posiciones")
         portfolio_layout = QVBoxLayout()
@@ -210,6 +240,44 @@ class MainWindow(QMainWindow):
         self.start_action.triggered.connect(self.start_strategy)
         self.stop_action.triggered.connect(self.stop_strategy)
         self.portfolio_table.cellClicked.connect(self.on_position_clicked)
+        self.add_watchlist_btn.clicked.connect(self.add_to_watchlist)
+        self.remove_watchlist_btn.clicked.connect(self.remove_from_watchlist)
+        self.watchlist_input.returnPressed.connect(self.add_to_watchlist)
+
+    def add_to_watchlist(self):
+        symbol = self.watchlist_input.text().strip().upper()
+        if not symbol:
+            return
+        if "," in symbol:
+            symbols = [s.strip() for s in symbol.split(",") if s.strip()]
+            for s in symbols:
+                if s not in config.trading.watchlist:
+                    config.trading.watchlist.append(s)
+                    self.log(f"Añadido a watchlist: {s}")
+        else:
+            if symbol not in config.trading.watchlist:
+                config.trading.watchlist.append(symbol)
+                self.log(f"Añadido a watchlist: {symbol}")
+            else:
+                QMessageBox.information(self, "Info", f"{symbol} ya está en la watchlist")
+        self.watchlist_input.clear()
+        self.update_watchlist_table()
+
+    def remove_from_watchlist(self):
+        row = self.watchlist_table.currentRow()
+        if row < 0:
+            QMessageBox.warning(self, "Aviso", "Selecciona una acción para quitar")
+            return
+        symbol = self.watchlist_table.item(row, 0).text()
+        if symbol in config.trading.watchlist:
+            config.trading.watchlist.remove(symbol)
+            self.log(f"Eliminado de watchlist: {symbol}")
+            self.update_watchlist_table()
+
+    def update_watchlist_table(self):
+        self.watchlist_table.setRowCount(len(config.trading.watchlist))
+        for i, symbol in enumerate(config.trading.watchlist):
+            self.watchlist_table.setItem(i, 0, QTableWidgetItem(symbol))
 
     def connect_broker(self):
         if self.broker.connect():

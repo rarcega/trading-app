@@ -18,11 +18,11 @@ class TradingConfig:
     use_simulation: bool = True
     check_interval_seconds: int = 60
     markets: List[str] = field(default_factory=lambda: ["US", "EU"])
-    watchlist: List[str] = field(default_factory=lambda: [
+    watchlist: List[str] = field(default_factory=lambda: list([
         "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA",
         "TSLA", "META", "JPM", "V", "JNJ",
         "SAP.DE", "ASML.AS", "NESM.PA", "SIE.DE", "ALV.DE",
-    ])
+    ]))
 
 
 @dataclass
