@@ -21,7 +21,7 @@ class TradingConfig:
     watchlist: List[str] = field(default_factory=lambda: list([
         "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA",
         "TSLA", "META", "JPM", "V", "JNJ",
-        "SAP.DE", "ASML.AS", "NESM.PA", "SIE.DE", "ALV.DE",
+        "SAP.DE", "ASML.AS", "NESN.SW", "SIE.DE", "ALV.DE",
     ]))
 
 

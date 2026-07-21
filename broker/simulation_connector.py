@@ -1,9 +1,12 @@
 import random
 import pandas as pd
 import yfinance as yf
+import warnings
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
 from config import config
+
+warnings.filterwarnings("ignore", category=UserWarning, module="yfinance")
 
 
 class SimulationConnector:
