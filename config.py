@@ -28,8 +28,8 @@ class TradingConfig:
 @dataclass
 class StrategyConfig:
     rsi_period: int = 14
-    rsi_oversold: float = 30.0
-    rsi_overbought: float = 70.0
+    rsi_oversold: float = 35.0
+    rsi_overbought: float = 65.0
     macd_fast: int = 12
     macd_slow: int = 26
     macd_signal: int = 9
@@ -37,6 +37,8 @@ class StrategyConfig:
     bb_std: float = 2.0
     sma_short: int = 20
     sma_long: int = 50
+    buy_threshold: float = 2.0
+    sell_threshold: float = 2.0
 
 
 @dataclass

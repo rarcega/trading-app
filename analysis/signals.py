@@ -67,9 +67,9 @@ class SignalGenerator:
                 reasons_sell.append("SMA bajista")
 
         signal_type = None
-        if buy_score >= 2.5:
+        if buy_score >= self.cfg.buy_threshold:
             signal_type = "BUY"
-        elif sell_score >= 2.5:
+        elif sell_score >= self.cfg.sell_threshold:
             signal_type = "SELL"
 
         if signal_type:

@@ -132,6 +132,52 @@ class MainWindow(QMainWindow):
         config_group.setLayout(config_layout)
         left_layout.addWidget(config_group)
 
+        strategy_group = QGroupBox("Estrategia")
+        strategy_layout = QVBoxLayout()
+
+        buy_threshold_layout = QHBoxLayout()
+        buy_threshold_layout.addWidget(QLabel("Umbral compra:"))
+        self.buy_threshold_spin = QDoubleSpinBox()
+        self.buy_threshold_spin.setRange(1.0, 4.0)
+        self.buy_threshold_spin.setValue(config.strategy.buy_threshold)
+        self.buy_threshold_spin.setSingleStep(0.5)
+        self.buy_threshold_spin.setDecimals(1)
+        buy_threshold_layout.addWidget(self.buy_threshold_spin)
+        strategy_layout.addLayout(buy_threshold_layout)
+
+        sell_threshold_layout = QHBoxLayout()
+        sell_threshold_layout.addWidget(QLabel("Umbral venta:"))
+        self.sell_threshold_spin = QDoubleSpinBox()
+        self.sell_threshold_spin.setRange(1.0, 4.0)
+        self.sell_threshold_spin.setValue(config.strategy.sell_threshold)
+        self.sell_threshold_spin.setSingleStep(0.5)
+        self.sell_threshold_spin.setDecimals(1)
+        sell_threshold_layout.addWidget(self.sell_threshold_spin)
+        strategy_layout.addLayout(sell_threshold_layout)
+
+        rsi_oversold_layout = QHBoxLayout()
+        rsi_oversold_layout.addWidget(QLabel("RSI sobreventa:"))
+        self.rsi_oversold_spin = QDoubleSpinBox()
+        self.rsi_oversold_spin.setRange(10.0, 45.0)
+        self.rsi_oversold_spin.setValue(config.strategy.rsi_oversold)
+        self.rsi_oversold_spin.setSingleStep(5.0)
+        self.rsi_oversold_spin.setDecimals(0)
+        rsi_oversold_layout.addWidget(self.rsi_oversold_spin)
+        strategy_layout.addLayout(rsi_oversold_layout)
+
+        rsi_overbought_layout = QHBoxLayout()
+        rsi_overbought_layout.addWidget(QLabel("RSI sobrecompra:"))
+        self.rsi_overbought_spin = QDoubleSpinBox()
+        self.rsi_overbought_spin.setRange(55.0, 90.0)
+        self.rsi_overbought_spin.setValue(config.strategy.rsi_overbought)
+        self.rsi_overbought_spin.setSingleStep(5.0)
+        self.rsi_overbought_spin.setDecimals(0)
+        rsi_overbought_layout.addWidget(self.rsi_overbought_spin)
+        strategy_layout.addLayout(rsi_overbought_layout)
+
+        strategy_group.setLayout(strategy_layout)
+        left_layout.addWidget(strategy_group)
+
         watchlist_group = QGroupBox("Watchlist")
         watchlist_layout = QVBoxLayout()
 
@@ -242,6 +288,10 @@ class MainWindow(QMainWindow):
         self.remove_watchlist_btn.clicked.connect(self.remove_from_watchlist)
         self.watchlist_input.returnPressed.connect(self.add_to_watchlist)
         self.amount_spin.valueChanged.connect(self.on_amount_changed)
+        self.buy_threshold_spin.valueChanged.connect(self.on_buy_threshold_changed)
+        self.sell_threshold_spin.valueChanged.connect(self.on_sell_threshold_changed)
+        self.rsi_oversold_spin.valueChanged.connect(self.on_rsi_oversold_changed)
+        self.rsi_overbought_spin.valueChanged.connect(self.on_rsi_overbought_changed)
 
     def on_amount_changed(self, value):
         config.trading.investment_amount = value
@@ -249,6 +299,22 @@ class MainWindow(QMainWindow):
             self.broker.cash = value
             self.broker.account_value = value
         self.update_account_summary()
+
+    def on_buy_threshold_changed(self, value):
+        config.strategy.buy_threshold = value
+        self.log(f"Umbral compra: {value}")
+
+    def on_sell_threshold_changed(self, value):
+        config.strategy.sell_threshold = value
+        self.log(f"Umbral venta: {value}")
+
+    def on_rsi_oversold_changed(self, value):
+        config.strategy.rsi_oversold = value
+        self.log(f"RSI sobreventa: {value}")
+
+    def on_rsi_overbought_changed(self, value):
+        config.strategy.rsi_overbought = value
+        self.log(f"RSI sobrecompra: {value}")
 
     def add_to_watchlist(self):
         symbol = self.watchlist_input.text().strip().upper()
