@@ -73,6 +73,45 @@ class SignalGenerator:
             signal_type = "SELL"
 
         if signal_type:
+            positions = self.db.get_positions()
+            position_symbols = {p.symbol for p in positions}
+            has_position = symbol in position_symbols
+
+            if signal_type == "BUY" and has_position:
+                return {
+                    "symbol": symbol,
+                    "signal": None,
+                    "buy_score": buy_score,
+                    "sell_score": sell_score,
+                    "reasons_buy": reasons_buy,
+                    "reasons_sell": reasons_sell,
+                    "indicators": latest,
+                }
+
+            if signal_type == "SELL" and not has_position:
+                return {
+                    "symbol": symbol,
+                    "signal": None,
+                    "buy_score": buy_score,
+                    "sell_score": sell_score,
+                    "reasons_buy": reasons_buy,
+                    "reasons_sell": reasons_sell,
+                    "indicators": latest,
+                }
+
+            existing_signals = self.db.get_signals(limit=100)
+            for sig in existing_signals:
+                if sig.symbol == symbol and sig.signal_type == signal_type:
+                    return {
+                        "symbol": symbol,
+                        "signal": None,
+                        "buy_score": buy_score,
+                        "sell_score": sell_score,
+                        "reasons_buy": reasons_buy,
+                        "reasons_sell": reasons_sell,
+                        "indicators": latest,
+                    }
+
             self.db.add_signal(
                 symbol=symbol,
                 signal_type=signal_type,
