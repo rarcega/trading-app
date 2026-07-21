@@ -243,6 +243,14 @@ class MainWindow(QMainWindow):
         self.add_watchlist_btn.clicked.connect(self.add_to_watchlist)
         self.remove_watchlist_btn.clicked.connect(self.remove_from_watchlist)
         self.watchlist_input.returnPressed.connect(self.add_to_watchlist)
+        self.amount_spin.valueChanged.connect(self.on_amount_changed)
+
+    def on_amount_changed(self, value):
+        config.trading.investment_amount = value
+        if hasattr(self.broker, 'cash'):
+            self.broker.cash = value
+            self.broker.account_value = value
+        self.update_account_summary()
 
     def add_to_watchlist(self):
         symbol = self.watchlist_input.text().strip().upper()
