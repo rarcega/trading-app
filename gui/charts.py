@@ -2,8 +2,8 @@ import pandas as pd
 import pyqtgraph as pg
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QComboBox
 from PyQt6.QtCore import Qt
-from ..config import config
-from ..analysis.indicators import TechnicalIndicators
+from config import config
+from analysis.indicators import TechnicalIndicators
 
 
 class ChartWidget(QWidget):

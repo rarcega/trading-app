@@ -6,13 +6,13 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QThread
 from PyQt6.QtGui import QAction, QColor, QFont
-from ..config import config
-from ..database.db_manager import DatabaseManager
-from ..broker.simulation_connector import SimulationConnector
-from ..broker.order_manager import OrderManager
-from ..analysis.signals import SignalGenerator
-from ..strategy.rotation_strategy import RotationStrategy
-from .charts import ChartWidget
+from config import config
+from database.db_manager import DatabaseManager
+from broker.simulation_connector import SimulationConnector
+from broker.order_manager import OrderManager
+from analysis.signals import SignalGenerator
+from strategy.rotation_strategy import RotationStrategy
+from gui.charts import ChartWidget
 
 
 class StrategyThread(QThread):

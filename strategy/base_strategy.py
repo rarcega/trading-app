@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Optional
-from ..broker.order_manager import OrderManager
-from ..analysis.signals import SignalGenerator
-from ..database.db_manager import DatabaseManager
+from broker.order_manager import OrderManager
+from analysis.signals import SignalGenerator
+from database.db_manager import DatabaseManager
 
 
 class BaseStrategy(ABC):

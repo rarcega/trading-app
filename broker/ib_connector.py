@@ -1,7 +1,7 @@
 import pandas as pd
 from datetime import datetime
 from typing import Dict, List, Optional
-from ..config import config
+from config import config
 
 try:
     from ib_async import IB, Stock, Forex, MarketOrder, LimitOrder

@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List, Optional
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from .models import Base, Trade, Position, Signal
+from database.models import Base, Trade, Position, Signal
 
 
 class DatabaseManager:

@@ -1,6 +1,6 @@
 from typing import Optional
-from ..config import config
-from ..database.db_manager import DatabaseManager
+from config import config
+from database.db_manager import DatabaseManager
 
 
 class OrderManager:

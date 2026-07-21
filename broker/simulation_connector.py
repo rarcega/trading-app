@@ -3,7 +3,7 @@ import pandas as pd
 import yfinance as yf
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
-from ..config import config
+from config import config
 
 
 class SimulationConnector:

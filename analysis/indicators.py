@@ -1,6 +1,6 @@
 import pandas as pd
 import pandas_ta as ta
-from ..config import config
+from config import config
 
 
 class TechnicalIndicators:

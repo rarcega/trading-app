@@ -1,2 +1,2 @@
-from .base_strategy import BaseStrategy
-from .rotation_strategy import RotationStrategy
+from strategy.base_strategy import BaseStrategy
+from strategy.rotation_strategy import RotationStrategy

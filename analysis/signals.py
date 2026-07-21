@@ -1,8 +1,8 @@
 import pandas as pd
 from typing import Optional
-from ..config import config
-from ..database.db_manager import DatabaseManager
-from .indicators import TechnicalIndicators
+from config import config
+from database.db_manager import DatabaseManager
+from analysis.indicators import TechnicalIndicators
 
 
 class SignalGenerator:

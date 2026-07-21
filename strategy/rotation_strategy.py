@@ -1,10 +1,10 @@
 import time
 from typing import List, Dict
-from ..config import config
-from ..database.db_manager import DatabaseManager
-from ..broker.order_manager import OrderManager
-from ..analysis.signals import SignalGenerator
-from .base_strategy import BaseStrategy
+from config import config
+from database.db_manager import DatabaseManager
+from broker.order_manager import OrderManager
+from analysis.signals import SignalGenerator
+from strategy.base_strategy import BaseStrategy
 
 
 class RotationStrategy(BaseStrategy):
