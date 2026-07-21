@@ -46,7 +46,7 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(1200, 800)
 
         self.db = DatabaseManager(config.db_path)
-        self.broker = SimulationConnector() if config.trading.use_simulation else None
+        self.broker = SimulationConnector(self.db) if config.trading.use_simulation else None
         self.order_manager = OrderManager(self.broker, self.db)
         self.signal_generator = SignalGenerator(self.db)
         self.strategy = RotationStrategy(
@@ -253,9 +253,9 @@ class MainWindow(QMainWindow):
         signals_tab = QWidget()
         signals_layout = QVBoxLayout(signals_tab)
         self.signals_table = QTableWidget()
-        self.signals_table.setColumnCount(6)
+        self.signals_table.setColumnCount(8)
         self.signals_table.setHorizontalHeaderLabels(
-            ["Fecha", "Símbolo", "Señal", "RSI", "MACD", "Precio"]
+            ["Fecha", "Símbolo", "Señal", "RSI", "MACD", "Precio", "Cantidad", "Importe"]
         )
         self.signals_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.signals_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
@@ -455,6 +455,8 @@ class MainWindow(QMainWindow):
             self.signals_table.setItem(i, 3, QTableWidgetItem(f"{sig.rsi_value:.1f}" if sig.rsi_value else ""))
             self.signals_table.setItem(i, 4, QTableWidgetItem(f"{sig.macd_value:.2f}" if sig.macd_value else ""))
             self.signals_table.setItem(i, 5, QTableWidgetItem(f"${sig.price:.2f}" if sig.price else ""))
+            self.signals_table.setItem(i, 6, QTableWidgetItem(f"{sig.quantity}" if sig.quantity else "0"))
+            self.signals_table.setItem(i, 7, QTableWidgetItem(f"${sig.total_amount:.2f}" if sig.total_amount else "$0.00"))
 
     def update_account_summary(self):
         summary = self.broker.get_account_summary()

@@ -65,5 +65,7 @@ class Signal(Base):
     sma_short = Column(Float)
     sma_long = Column(Float)
     price = Column(Float)
+    quantity = Column(Integer, default=0)
+    total_amount = Column(Float, default=0.0)
     executed = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)

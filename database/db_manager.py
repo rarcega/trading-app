@@ -91,7 +91,8 @@ class DatabaseManager:
     def add_signal(self, symbol: str, signal_type: str, rsi_value: float = None,
                    macd_value: float = None, macd_signal: float = None,
                    bb_position: float = None, sma_short: float = None,
-                   sma_long: float = None, price: float = None) -> Signal:
+                   sma_long: float = None, price: float = None,
+                   quantity: int = 0, total_amount: float = 0.0) -> Signal:
         session = self.Session()
         try:
             signal = Signal(
@@ -104,6 +105,8 @@ class DatabaseManager:
                 sma_short=sma_short,
                 sma_long=sma_long,
                 price=price,
+                quantity=quantity,
+                total_amount=total_amount,
             )
             session.add(signal)
             session.commit()

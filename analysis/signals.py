@@ -112,6 +112,10 @@ class SignalGenerator:
                         "indicators": latest,
                     }
 
+            position_size = config.trading.investment_amount / config.trading.max_positions
+            quantity = int(position_size / price) if price > 0 else 0
+            total_amount = quantity * price
+
             self.db.add_signal(
                 symbol=symbol,
                 signal_type=signal_type,
@@ -122,6 +126,8 @@ class SignalGenerator:
                 sma_short=sma_short,
                 sma_long=sma_long,
                 price=price,
+                quantity=quantity,
+                total_amount=total_amount,
             )
 
         return {

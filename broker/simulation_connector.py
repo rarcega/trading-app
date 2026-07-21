@@ -10,11 +10,28 @@ warnings.filterwarnings("ignore", category=UserWarning, module="yfinance")
 
 
 class SimulationConnector:
-    def __init__(self):
+    def __init__(self, db_manager=None):
         self.connected = False
         self.cash = config.trading.investment_amount
         self.positions: Dict[str, dict] = {}
         self.account_value = self.cash
+        self.db = db_manager
+        if self.db:
+            self.load_positions_from_db()
+
+    def load_positions_from_db(self):
+        if not self.db:
+            return
+        positions = self.db.get_positions()
+        total_invested = 0
+        for pos in positions:
+            self.positions[pos.symbol] = {
+                "quantity": pos.quantity,
+                "avg_price": pos.avg_price,
+                "current_price": pos.current_price,
+            }
+            total_invested += pos.avg_price * pos.quantity
+        self.cash = config.trading.investment_amount - total_invested
 
     def connect(self) -> bool:
         self.connected = True
