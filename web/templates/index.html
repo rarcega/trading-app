@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading App</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #1a1a2e; color: #eee; }
+        .header { background: #16213e; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0f3460; }
+        .header h1 { color: #e94560; font-size: 1.5em; }
+        .status-badge { padding: 6px 12px; border-radius: 4px; font-weight: bold; font-size: 0.9em; }
+        .status-connected { background: #27ae60; color: white; }
+        .status-disconnected { background: #e74c3c; color: white; }
+        .container { display: grid; grid-template-columns: 350px 1fr; gap: 20px; padding: 20px; max-width: 1400px; margin: 0 auto; }
+        .panel { background: #16213e; border-radius: 8px; padding: 15px; border: 1px solid #0f3460; }
+        .panel h2 { color: #e94560; margin-bottom: 15px; font-size: 1.1em; border-bottom: 1px solid #0f3460; padding-bottom: 8px; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; margin-bottom: 4px; color: #aaa; font-size: 0.9em; }
+        .form-group input, .form-group select { width: 100%; padding: 8px; border: 1px solid #0f3460; border-radius: 4px; background: #1a1a2e; color: #eee; }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; margin-bottom: 8px; }
+        .btn-primary { background: #e94560; color: white; }
+        .btn-success { background: #27ae60; color: white; }
+        .btn-danger { background: #e74c3c; color: white; }
+        .btn:hover { opacity: 0.9; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .account-summary { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .account-item { background: #1a1a2e; padding: 12px; border-radius: 6px; text-align: center; }
+        .account-item .label { color: #aaa; font-size: 0.8em; }
+        .account-item .value { font-size: 1.3em; font-weight: bold; margin-top: 4px; }
+        .account-item .value.green { color: #27ae60; }
+        .account-item .value.red { color: #e74c3c; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85em; }
+        th { background: #0f3460; padding: 10px 8px; text-align: left; position: sticky; top: 0; }
+        td { padding: 8px; border-bottom: 1px solid #0f3460; }
+        tr:hover { background: #1a1a2e; }
+        .pnl-positive { color: #27ae60; }
+        .pnl-negative { color: #e74c3c; }
+        .signal-buy { color: #27ae60; font-weight: bold; }
+        .signal-sell { color: #e74c3c; font-weight: bold; }
+        .tabs { display: flex; gap: 5px; margin-bottom: 15px; }
+        .tab { padding: 8px 16px; background: #1a1a2e; border: 1px solid #0f3460; border-radius: 4px; cursor: pointer; color: #aaa; }
+        .tab.active { background: #e94560; color: white; border-color: #e94560; }
+        .tab-content { display: none; max-height: 400px; overflow-y: auto; }
+        .tab-content.active { display: block; }
+        .watchlist-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; background: #1a1a2e; border-radius: 4px; margin-bottom: 4px; }
+        .watchlist-item span { cursor: pointer; color: #e74c3c; }
+        .watchlist-input { display: flex; gap: 8px; margin-bottom: 10px; }
+        .watchlist-input input { flex: 1; }
+        .watchlist-input button { width: auto; padding: 8px 16px; }
+        #log { background: #0d0d0d; padding: 10px; border-radius: 4px; font-family: Consolas, monospace; font-size: 0.8em; height: 300px; overflow-y: auto; color: #00ff00; }
+        @media (max-width: 900px) { .container { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Trading App - Análisis Técnico</h1>
+        <div>
+            <span id="statusBadge" class="status-badge status-disconnected">Desconectado</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="left-panel">
+            <div class="panel" style="margin-bottom: 15px;">
+                <h2>Conexión</h2>
+                <button id="connectBtn" class="btn btn-success" onclick="connect()">Conectar</button>
+                <button id="disconnectBtn" class="btn btn-danger" onclick="disconnect()" disabled>Desconectar</button>
+                <hr style="border-color: #0f3460; margin: 10px 0;">
+                <button id="startBtn" class="btn btn-primary" onclick="startStrategy()" disabled>Iniciar Estrategia</button>
+                <button id="stopBtn" class="btn btn-danger" onclick="stopStrategy()" disabled>Detener Estrategia</button>
+            </div>
+
+            <div class="panel" style="margin-bottom: 15px;">
+                <h2>Resumen Cuenta</h2>
+                <div class="account-summary">
+                    <div class="account-item">
+                        <div class="label">Efectivo</div>
+                        <div class="value" id="cash">$0.00</div>
+                    </div>
+                    <div class="account-item">
+                        <div class="label">Posiciones</div>
+                        <div class="value" id="positionsValue">$0.00</div>
+                    </div>
+                    <div class="account-item">
+                        <div class="label">Total</div>
+                        <div class="value" id="totalValue">$0.00</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel" style="margin-bottom: 15px;">
+                <h2>Configuración</h2>
+                <div class="form-group">
+                    <label>Inversión total ($)</label>
+                    <input type="number" id="investmentAmount" value="10000" onchange="updateConfig()">
+                </div>
+                <div class="form-group">
+                    <label>Máx. posiciones</label>
+                    <input type="number" id="maxPositions" value="5" min="1" max="20" onchange="updateConfig()">
+                </div>
+                <div class="form-group">
+                    <label>Intervalo (seg)</label>
+                    <input type="number" id="checkInterval" value="60" min="10" onchange="updateConfig()">
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>Estrategia</h2>
+                <div class="form-group">
+                    <label>Umbral compra</label>
+                    <input type="number" id="buyThreshold" value="2.0" step="0.5" min="1" max="4" onchange="updateConfig()">
+                </div>
+                <div class="form-group">
+                    <label>Umbral venta</label>
+                    <input type="number" id="sellThreshold" value="2.0" step="0.5" min="1" max="4" onchange="updateConfig()">
+                </div>
+                <div class="form-group">
+                    <label>RSI sobreventa</label>
+                    <input type="number" id="rsiOversold" value="35" min="10" max="45" onchange="updateConfig()">
+                </div>
+                <div class="form-group">
+                    <label>RSI sobrecompra</label>
+                    <input type="number" id="rsiOverbought" value="65" min="55" max="90" onchange="updateConfig()">
+                </div>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <div class="panel">
+                <div class="tabs">
+                    <div class="tab active" onclick="switchTab('positions')">Posiciones</div>
+                    <div class="tab" onclick="switchTab('signals')">Señales</div>
+                    <div class="tab" onclick="switchTab('trades')">Historial</div>
+                    <div class="tab" onclick="switchTab('watchlist')">Watchlist</div>
+                    <div class="tab" onclick="switchTab('log')">Log</div>
+                </div>
+
+                <div id="positionsTab" class="tab-content active">
+                    <table>
+                        <thead>
+                            <tr><th>Símbolo</th><th>Cantidad</th><th>Precio Entrada</th><th>Precio Actual</th><th>P&L</th><th>P&L %</th></tr>
+                        </thead>
+                        <tbody id="positionsBody"></tbody>
+                    </table>
+                </div>
+
+                <div id="signalsTab" class="tab-content">
+                    <table>
+                        <thead>
+                            <tr><th>Fecha</th><th>Símbolo</th><th>Señal</th><th>RSI</th><th>MACD</th><th>Precio</th><th>Cantidad</th><th>Importe</th></tr>
+                        </thead>
+                        <tbody id="signalsBody"></tbody>
+                    </table>
+                </div>
+
+                <div id="tradesTab" class="tab-content">
+                    <table>
+                        <thead>
+                            <tr><th>Fecha</th><th>Símbolo</th><th>Tipo</th><th>Cantidad</th><th>Precio</th><th>Total</th></tr>
+                        </thead>
+                        <tbody id="tradesBody"></tbody>
+                    </table>
+                </div>
+
+                <div id="watchlistTab" class="tab-content">
+                    <div class="watchlist-input">
+                        <input type="text" id="watchlistInput" placeholder="Ej: AAPL, SAN.MC">
+                        <button class="btn btn-success" onclick="addToWatchlist()">+</button>
+                    </div>
+                    <div id="watchlistContainer"></div>
+                </div>
+
+                <div id="logTab" class="tab-content">
+                    <div id="log"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+
+        function connect() {
+            fetch('/api/connect', { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('statusBadge').className = 'status-badge status-connected';
+                        document.getElementById('statusBadge').textContent = 'Conectado';
+                        document.getElementById('connectBtn').disabled = true;
+                        document.getElementById('disconnectBtn').disabled = false;
+                        document.getElementById('startBtn').disabled = false;
+                        loadAll();
+                        addLog('Conectado al broker');
+                    }
+                });
+        }
+
+        function disconnect() {
+            fetch('/api/disconnect', { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('statusBadge').className = 'status-badge status-disconnected';
+                    document.getElementById('statusBadge').textContent = 'Desconectado';
+                    document.getElementById('connectBtn').disabled = false;
+                    document.getElementById('disconnectBtn').disabled = true;
+                    document.getElementById('startBtn').disabled = true;
+                    document.getElementById('stopBtn').disabled = true;
+                    addLog('Desconectado del broker');
+                });
+        }
+
+        function startStrategy() {
+            fetch('/api/strategy/start', { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('startBtn').disabled = true;
+                    document.getElementById('stopBtn').disabled = false;
+                    addLog('Estrategia iniciada');
+                });
+        }
+
+        function stopStrategy() {
+            fetch('/api/strategy/stop', { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('startBtn').disabled = false;
+                    document.getElementById('stopBtn').disabled = true;
+                    addLog('Estrategia detenida');
+                });
+        }
+
+        function updateConfig() {
+            fetch('/api/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    investment_amount: parseFloat(document.getElementById('investmentAmount').value),
+                    max_positions: parseInt(document.getElementById('maxPositions').value),
+                    check_interval: parseInt(document.getElementById('checkInterval').value),
+                    buy_threshold: parseFloat(document.getElementById('buyThreshold').value),
+                    sell_threshold: parseFloat(document.getElementById('sellThreshold').value),
+                    rsi_oversold: parseFloat(document.getElementById('rsiOversold').value),
+                    rsi_overbought: parseFloat(document.getElementById('rsiOverbought').value),
+                })
+            });
+        }
+
+        function loadAll() {
+            loadAccount();
+            loadPositions();
+            loadSignals();
+            loadTrades();
+            loadWatchlist();
+            loadConfig();
+        }
+
+        function loadAccount() {
+            fetch('/api/account').then(r => r.json()).then(data => {
+                document.getElementById('cash').textContent = '$' + (data.total_cash || 0).toFixed(2);
+                document.getElementById('positionsValue').textContent = '$' + (data.positions_value || 0).toFixed(2);
+                document.getElementById('totalValue').textContent = '$' + (data.account_value || 0).toFixed(2);
+            });
+        }
+
+        function loadPositions() {
+            fetch('/api/positions').then(r => r.json()).then(data => {
+                const tbody = document.getElementById('positionsBody');
+                tbody.innerHTML = data.map(p => `
+                    <tr>
+                        <td><strong>${p.symbol}</strong></td>
+                        <td>${p.quantity}</td>
+                        <td>$${p.avg_price.toFixed(2)}</td>
+                        <td>$${p.current_price.toFixed(2)}</td>
+                        <td class="${p.unrealized_pnl >= 0 ? 'pnl-positive' : 'pnl-negative'}">$${p.unrealized_pnl.toFixed(2)}</td>
+                        <td class="${p.unrealized_pnl_pct >= 0 ? 'pnl-positive' : 'pnl-negative'}">${p.unrealized_pnl_pct.toFixed(2)}%</td>
+                    </tr>
+                `).join('');
+            });
+        }
+
+        function loadSignals() {
+            fetch('/api/signals').then(r => r.json()).then(data => {
+                const tbody = document.getElementById('signalsBody');
+                tbody.innerHTML = data.map(s => `
+                    <tr>
+                        <td>${s.date}</td>
+                        <td><strong>${s.symbol}</strong></td>
+                        <td class="${s.type === 'BUY' ? 'signal-buy' : 'signal-sell'}">${s.type}</td>
+                        <td>${s.rsi ? s.rsi.toFixed(1) : '-'}</td>
+                        <td>${s.macd ? s.macd.toFixed(2) : '-'}</td>
+                        <td>$${s.price ? s.price.toFixed(2) : '-'}</td>
+                        <td>${s.quantity || 0}</td>
+                        <td>$${s.total ? s.total.toFixed(2) : '0.00'}</td>
+                    </tr>
+                `).join('');
+            });
+        }
+
+        function loadTrades() {
+            fetch('/api/trades').then(r => r.json()).then(data => {
+                const tbody = document.getElementById('tradesBody');
+                tbody.innerHTML = data.map(t => `
+                    <tr>
+                        <td>${t.date}</td>
+                        <td><strong>${t.symbol}</strong></td>
+                        <td class="${t.type === 'BUY' ? 'signal-buy' : 'signal-sell'}">${t.type}</td>
+                        <td>${t.quantity}</td>
+                        <td>$${t.price.toFixed(2)}</td>
+                        <td>$${t.total.toFixed(2)}</td>
+                    </tr>
+                `).join('');
+            });
+        }
+
+        function loadWatchlist() {
+            fetch('/api/watchlist').then(r => r.json()).then(data => {
+                const container = document.getElementById('watchlistContainer');
+                container.innerHTML = data.watchlist.map(s => `
+                    <div class="watchlist-item">
+                        <span>${s}</span>
+                        <span onclick="removeFromWatchlist('${s}')">✕</span>
+                    </div>
+                `).join('');
+            });
+        }
+
+        function loadConfig() {
+            fetch('/api/config').then(r => r.json()).then(data => {
+                document.getElementById('investmentAmount').value = data.investment_amount;
+                document.getElementById('maxPositions').value = data.max_positions;
+                document.getElementById('checkInterval').value = data.check_interval;
+                document.getElementById('buyThreshold').value = data.buy_threshold;
+                document.getElementById('sellThreshold').value = data.sell_threshold;
+                document.getElementById('rsiOversold').value = data.rsi_oversold;
+                document.getElementById('rsiOverbought').value = data.rsi_overbought;
+            });
+        }
+
+        function addToWatchlist() {
+            const input = document.getElementById('watchlistInput');
+            const symbols = input.value.split(',').map(s => s.trim().toUpperCase()).filter(s => s);
+            symbols.forEach(symbol => {
+                fetch('/api/watchlist/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ symbol })
+                }).then(() => loadWatchlist());
+            });
+            input.value = '';
+        }
+
+        function removeFromWatchlist(symbol) {
+            fetch('/api/watchlist/remove', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ symbol })
+            }).then(() => loadWatchlist());
+        }
+
+        function switchTab(name) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(name + 'Tab').classList.add('active');
+        }
+
+        function addLog(msg) {
+            const log = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            log.innerHTML += `<div>[${time}] ${msg}</div>`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function connectWebSocket() {
+            ws = new WebSocket(`ws://${location.host}/ws`);
+            ws.onmessage = (e) => {
+                const msg = JSON.parse(e.data);
+                if (msg.type === 'trade') {
+                    addLog(`[${msg.data.action}] ${msg.data.symbol} x${msg.data.quantity} @ $${msg.data.price.toFixed(2)}`);
+                    loadAll();
+                } else if (msg.type === 'scan_complete') {
+                    addLog(`Escaneo completado. Operaciones: ${msg.data.actions}`);
+                    loadAll();
+                } else if (msg.type === 'error') {
+                    addLog(`Error: ${msg.data}`);
+                }
+            };
+            ws.onclose = () => setTimeout(connectWebSocket, 3000);
+        }
+
+        connectWebSocket();
+        loadConfig();
+    </script>
+</body>
+</html>
