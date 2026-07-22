@@ -9,7 +9,7 @@
     "max_positions": 5,
     "investment_amount": 5000.0,
     "use_simulation": true,
-    "check_interval_seconds": 60,
+    "check_interval_seconds": 10,
     "markets": [
       "US",
       "EU"

@@ -48,11 +48,19 @@ class SimulationConnector:
             pos["quantity"] * pos["current_price"]
             for pos in self.positions.values()
         )
+        total_invested = sum(
+            pos["quantity"] * pos["avg_price"]
+            for pos in self.positions.values()
+        )
+        self.cash = config.trading.investment_amount - total_invested
         self.account_value = self.cash + positions_value
+        pnl = positions_value - total_invested
         return {
             "total_cash": self.cash,
             "positions_value": positions_value,
             "account_value": self.account_value,
+            "total_invested": total_invested,
+            "unrealized_pnl": pnl,
         }
 
     def get_positions(self) -> List[dict]:
