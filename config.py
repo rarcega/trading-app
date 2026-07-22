@@ -25,6 +25,9 @@ class TradingConfig:
         "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA",
         "TSLA", "META", "JPM", "V", "JNJ",
         "SAP.DE", "ASML.AS", "NESN.SW", "SIE.DE", "ALV.DE",
+        "SAN.MC", "BBVA.MC", "TEF.MC", "IBE.MC", "REP.MC",
+        "ITX.MC", "CABK.MC", "BKT.MC", "NTGY.MC", "ELE.MC",
+        "MAP.MC", "AMS.MC", "AENA.MC", "CLNX.MC", "ENG.MC",
     ]))
 
 
